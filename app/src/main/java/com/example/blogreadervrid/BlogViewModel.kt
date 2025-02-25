@@ -1,14 +1,16 @@
 package com.example.blogreadervrid
 
+import BlogRepository
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 
-class BlogViewModel : ViewModel() {
-    private val _blogs = MutableStateFlow<List<BlogPost>>(emptyList())
-    val blogs: StateFlow<List<BlogPost>> = _blogs
+
+class BlogViewModel(private val repository: BlogRepository) : ViewModel() {
+    private val _blogs = MutableStateFlow<List<BlogPostEntity>>(emptyList())
+    val blogs: StateFlow<List<BlogPostEntity>> = _blogs
 
     private var currentPage = 1
     var isFetching = false
@@ -24,8 +26,8 @@ class BlogViewModel : ViewModel() {
 
         viewModelScope.launch {
             try {
-                val newBlogs = RetrofitInstance.api.getBlogs(perPage = 10, page = currentPage)
-                _blogs.value += newBlogs
+                val newBlogs = repository.getBlogPosts(page = currentPage)
+                _blogs.value = _blogs.value + newBlogs
                 currentPage++
             } catch (e: Exception) {
                 e.printStackTrace()
